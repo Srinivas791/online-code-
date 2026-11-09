@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeStudio Pro - Real Online Compiler, Debugger & Code Visualizer</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ================= APP HEADER ================= -->
+  <header class="app-header">
+    <div class="brand-section">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-name">CodeStudio Pro</span>
+      <span class="brand-tag">Real Execution Engine</span>
+    </div>
+
+    <div class="topbar-actions">
+      <!-- Language Selector -->
+      <select id="topbar-lang-select" class="topbar-select" title="Switch Language Environment">
+        <option value="python">Python 3 (3.8+)</option>
+        <option value="c">C (GCC 9.2)</option>
+        <option value="cpp">C++ (GCC 9.2)</option>
+        <option value="java">Java (OpenJDK 13)</option>
+        <option value="javascript">JavaScript (Node / Browser)</option>
+        <option value="html">HTML5</option>
+        <option value="css">CSS3</option>
+      </select>
+
+      <!-- Run Code Button -->
+      <button id="btn-run-code" class="btn-primary-action" title="Run Code (Ctrl+Enter)">
+        <span>▶ Run Code</span>
+      </button>
+
+      <!-- Debug Button -->
+      <button id="btn-debug-code" class="btn-action btn-debug" title="Start Debugging (F5)">
+        <span>🐞 Debug</span>
+      </button>
+
+      <!-- Visualize My Code Button -->
+      <button id="btn-visualize-code" class="btn-action btn-vis" title="Visualize My Code Step-by-Step">
+        <span>👁️ Visualize My Code</span>
+      </button>
+
+      <!-- Web Live Preview Button -->
+      <button id="btn-live-preview" class="btn-action" title="Open Interactive Web Playground">
+        <span>🌐 Playground</span>
+      </button>
+
+      <!-- Judge0 API Settings -->
+      <button id="btn-settings-open" class="btn-action" title="Configure Judge0 API & Endpoints">
+        <span>⚙️ Judge0 API</span>
+      </button>
+
+      <!-- Export Project -->
+      <button id="btn-export-project" class="btn-action" title="Export Project Package (JSON)">
+        <span>💾 Export</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= WORKSPACE MAIN ================= -->
+  <div class="workspace-container">
+    
+    <!-- Activity Bar (Far Left) -->
+    <nav class="activity-bar">
+      <div class="activity-icons-top">
+        <button class="activity-icon active" data-activity="explorer" title="Explorer (Ctrl+Shift+E)">📁</button>
+        <button class="activity-icon" data-activity="debug" title="Run & Debug (Ctrl+Shift+D)">🐞</button>
+        <button class="activity-icon" data-activity="visualizer" title="Visualize My Code">👁️</button>
+        <button class="activity-icon" data-activity="playground" title="Web Playground & Live DOM">🌐</button>
+        <button class="activity-icon" data-activity="learning" title="Learn & Coding Challenges">🎓</button>
+      </div>
+      <div class="activity-icons-bottom">
+        <button class="activity-icon" data-activity="settings" id="activity-settings-btn" title="Settings">⚙️</button>
+      </div>
+    </nav>
+
+    <!-- Sidebar (Collapsible) -->
+    <aside class="sidebar" id="sidebar">
+      
+      <!-- Explorer View -->
+      <div class="sidebar-view active" id="view-explorer">
+        <div class="sidebar-header">
+          <span>Project Explorer</span>
+          <div class="sidebar-actions">
+            <button id="btn-new-file" class="sidebar-tool-btn" title="New File">+</button>
+            <button id="btn-import-project" class="sidebar-tool-btn" title="Import Files">📥</button>
+            <button id="btn-download-file" class="sidebar-tool-btn" title="Download Active File">⬇</button>
+            <button id="btn-reset-templates" class="sidebar-tool-btn" title="Reset Starter Templates">↺</button>
+          </div>
+        </div>
+        <div class="file-tree-container" id="file-tree">
+          <!-- Populated dynamically by file-system.js -->
+        </div>
+      </div>
+
+      <!-- Debug Sidebar View -->
+      <div class="sidebar-view" id="view-debug">
+        <div class="sidebar-header">
+          <span>Run & Debug</span>
+        </div>
+
+        <!-- Debug Controls Toolbar -->
+        <div class="debug-toolbar-mini">
+          <button id="debug-btn-start" class="dbg-ctrl-btn" title="Start/Continue (F5)">▶</button>
+          <button id="debug-btn-pause" class="dbg-ctrl-btn" title="Pause" disabled>⏸</button>
+          <button id="debug-btn-step-over" class="dbg-ctrl-btn" title="Step Over (F10)" disabled>↷</button>
+          <button id="debug-btn-step-into" class="dbg-ctrl-btn" title="Step Into (F11)" disabled>⇊</button>
+          <button id="debug-btn-step-out" class="dbg-ctrl-btn" title="Step Out (Shift+F11)" disabled>⇈</button>
+          <button id="debug-btn-restart" class="dbg-ctrl-btn" title="Restart">↺</button>
+          <button id="debug-btn-stop" class="dbg-ctrl-btn" title="Stop" disabled>⏹</button>
+        </div>
+
+        <!-- Variables Panel -->
+        <div class="debug-panel-section">
+          <div class="debug-sec-title">Variables (Locals & Scope)</div>
+          <div id="debug-variables-list">
+            <div class="debug-empty">Not debugging</div>
+          </div>
+        </div>
+
+        <!-- Watch Expressions -->
+        <div class="debug-panel-section">
+          <div class="debug-sec-title">Watch Expressions</div>
+          <div id="debug-watch-list"></div>
+          <div class="watch-input-box">
+            <input type="text" id="debug-watch-input" class="watch-input" placeholder="Expression (e.g. x, arr[i])">
+            <button id="debug-add-watch-btn" class="dbg-ctrl-btn">+</button>
+          </div>
+        </div>
+
+        <!-- Call Stack -->
+        <div class="debug-panel-section">
+          <div class="debug-sec-title">Call Stack</div>
+          <div id="debug-callstack-list">
+            <div class="debug-empty">Stack empty</div>
+          </div>
+        </div>
+
+        <!-- Breakpoints -->
+        <div class="debug-panel-section">
+          <div class="debug-sec-title">Breakpoints</div>
+          <div id="debug-breakpoints-list">
+            <div class="debug-empty">Click editor gutter to set breakpoints.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visualizer Sidebar View -->
+      <div class="sidebar-view" id="view-visualizer">
+        <div class="sidebar-header">
+          <span>Visualizer Demos</span>
+        </div>
+        <div style="padding: 12px;">
+          <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Select a Pre-built Demo:</div>
+          <select id="vis-demo-selector" class="form-select" style="width: 100%; margin-bottom: 12px;">
+            <option value="">-- Choose Interactive Demo --</option>
+            <option value="c_pointers">C: Pointer Swap & Memory Addresses</option>
+            <option value="c_linked_list">C: Linked List Node Insertion</option>
+            <option value="cpp_sorting">C++: Bubble Sort Step Animation</option>
+            <option value="java_heap">Java: Stack vs Heap & Object References</option>
+            <option value="java_inheritance">Java: Inheritance & Dynamic Dispatch</option>
+            <option value="python_recursion">Python: Recursion Call Tree</option>
+            <option value="python_structures">Python: Lists & Dictionaries</option>
+          </select>
+          <div style="font-size: 11px; line-height: 1.5; color: var(--text-muted);">
+            Or click <strong>"Visualize My Code"</strong> at the top to analyze and step through your own code in the editor!
+          </div>
+        </div>
+      </div>
+
+      <!-- Learning Sidebar View -->
+      <div class="sidebar-view" id="view-learning">
+        <div class="sidebar-header">
+          <span>Coding Challenges</span>
+        </div>
+        <div class="challenge-list" id="learning-challenge-list">
+          <!-- Populated by learning.js -->
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Center Code Editor -->
+    <main class="editor-container">
+      
+      <!-- Editor Tabs -->
+      <div class="editor-tabs-bar" id="editor-tabs-bar">
+        <!-- Tabs rendered dynamically -->
+      </div>
+
+      <!-- Breadcrumbs -->
+      <div class="breadcrumbs-bar">
+        <span>workspace</span>
+        <span>›</span>
+        <span id="breadcrumb-filename">main.py</span>
+      </div>
+
+      <!-- Monaco / Editor Mount Surface -->
+      <div class="editor-surface" id="editor-surface">
+        <div style="padding: 20px; color: var(--text-muted);">Loading Monaco Editor...</div>
+      </div>
+
+    </main>
+
+    <!-- Secondary Split Panel (Right) -->
+    <aside class="secondary-panel" id="secondary-panel">
+      
+      <!-- Visualizer Secondary View -->
+      <div class="secondary-view active" id="sec-view-visualizer">
+        <div class="vis-control-bar">
+          <div class="vis-btn-group">
+            <button id="vis-btn-play" class="vis-ctrl-btn"><span>▶ Play</span></button>
+            <button id="vis-btn-prev" class="vis-ctrl-btn"><span>⏮ Prev</span></button>
+            <button id="vis-btn-next" class="vis-ctrl-btn"><span>Next ⏭</span></button>
+            <button id="vis-btn-reset" class="vis-ctrl-btn"><span>↺ Reset</span></button>
+          </div>
+          <div class="vis-speed-control">
+            <span>Speed:</span>
+            <input type="range" id="vis-speed-slider" min="0.25" max="3" step="0.25" value="1">
+          </div>
+          <span id="vis-step-indicator" style="font-size: 11px; color: var(--text-bright);">Step 1 of 1</span>
+        </div>
+
+        <!-- Dynamic Step Explanation Banner -->
+        <div class="vis-explanation" id="vis-explanation">
+          <div class="exp-badge">Ready</div>
+          <div class="exp-text">Click "Visualize My Code" to trace execution steps, memory, and data structures.</div>
+        </div>
+
+        <!-- Visualization Canvas / Diagram Stage -->
+        <div class="visualizer-stage" id="visualizer-stage">
+          <!-- Rendered dynamically by visualizer.js -->
+        </div>
+      </div>
+
+      <!-- Web Playground Secondary View -->
+      <div class="secondary-view" id="sec-view-playground">
+        <div class="playground-toolbar">
+          <div class="device-switcher">
+            <button class="device-btn active" data-device="desktop">🖥️ Desktop</button>
+            <button class="device-btn" data-device="tablet">📱 Tablet</button>
+            <button class="device-btn" data-device="mobile">📱 Mobile</button>
+          </div>
+          <div class="pg-tabs-bar">
+            <button class="pg-tab-btn active" data-tab="preview">Preview</button>
+            <button class="pg-tab-btn" data-tab="dom">DOM Tree</button>
+            <button class="pg-tab-btn" data-tab="events">Events</button>
+            <button class="pg-tab-btn" data-tab="console">Console</button>
+          </div>
+          <div style="display: flex; gap: 4px;">
+            <button id="playground-btn-refresh" class="vis-ctrl-btn" title="Refresh Live Preview">↺</button>
+            <button id="playground-btn-fullscreen" class="vis-ctrl-btn" title="Full Screen Preview">⛶</button>
+          </div>
+        </div>
+
+        <!-- Live Preview Iframe Container -->
+        <div class="pg-tab-content active" id="pg-view-preview" style="padding: 0; height: 100%;">
+          <div class="playground-preview-container" id="playground-preview-container">
+            <iframe id="playground-iframe" class="playground-iframe" sandbox="allow-scripts allow-modals allow-forms"></iframe>
+          </div>
+        </div>
+
+        <!-- DOM Tree Inspector -->
+        <div class="pg-tab-content" id="pg-view-dom">
+          <div id="playground-dom-tree"></div>
+        </div>
+
+        <!-- Event Visualizer -->
+        <div class="pg-tab-content" id="pg-view-events">
+          <div style="font-size: 12px; font-weight: bold; margin-bottom: 8px;">Real-Time Browser Event Stream</div>
+          <div id="playground-event-list"></div>
+        </div>
+
+        <!-- In-App Console -->
+        <div class="pg-tab-content" id="pg-view-console">
+          <div style="font-size: 12px; font-weight: bold; margin-bottom: 8px;">Browser Sandbox Console</div>
+          <div id="playground-console-logs"></div>
+        </div>
+      </div>
+
+      <!-- Learning Secondary View -->
+      <div class="secondary-view" id="sec-view-learning">
+        <div class="learning-detail-panel">
+          <div class="ch-header">
+            <h2 id="learning-detail-title" class="learning-title">Challenge Title</h2>
+            <span id="learning-detail-badge" class="badge">PYTHON • Beginner</span>
+          </div>
+          <p id="learning-detail-desc" class="learning-desc">Description of challenge...</p>
+          
+          <div style="font-size: 12px; font-weight: bold;">Hints:</div>
+          <ul id="learning-detail-hints" class="learning-hints">
+            <li>Hint 1</li>
+          </ul>
+
+          <div style="display: flex; gap: 8px;">
+            <button id="learning-btn-load-starter" class="btn-action">Load Starter Code</button>
+            <button id="learning-btn-test" class="btn-primary-action">✓ Run Test Cases</button>
+          </div>
+
+          <!-- Test Cases Verdict / Expected vs Actual Diff -->
+          <div id="learning-test-results"></div>
+        </div>
+      </div>
+
+    </aside>
+
+  </div>
+
+  <!-- ================= BOTTOM TERMINAL & OUTPUT CONSOLE ================= -->
+  <div class="terminal-panel">
+    <div class="terminal-header">
+      <div class="term-tabs-left">
+        <button class="term-tab-btn active" data-tab="stdout">Standard Output</button>
+        <button class="term-tab-btn" data-tab="stderr">Standard Error</button>
+        <button class="term-tab-btn" data-tab="compile">Compilation Results</button>
+        <button class="term-tab-btn" data-tab="stdin">Standard Input (stdin)</button>
+        <button class="term-tab-btn" data-tab="tests">Test Results</button>
+      </div>
+
+      <div class="term-actions-right">
+        <!-- Execution Stats Badge -->
+        <div id="term-execution-stats" class="term-stats-badge badge-pending">
+          <span class="stat-status">Status: <strong>Ready</strong></span>
+        </div>
+        <button id="btn-clear-terminal" class="sidebar-tool-btn" title="Clear Console">🗑️ Clear</button>
+      </div>
+    </div>
+
+    <div class="term-views-container">
+      <!-- Standard Output View -->
+      <div class="term-view active" id="term-view-stdout">
+        <pre id="term-stdout" class="console-output">Welcome to CodeStudio Pro! Write code, click 'Run Code' (Ctrl+Enter) or 'Debug' (F5).</pre>
+      </div>
+
+      <!-- Standard Error View -->
+      <div class="term-view" id="term-view-stderr">
+        <pre id="term-stderr" class="console-output">(No runtime errors)</pre>
+      </div>
+
+      <!-- Compilation Results View -->
+      <div class="term-view" id="term-view-compile">
+        <pre id="term-compile" class="console-output">(No compilation errors. Program compiled successfully.)</pre>
+      </div>
+
+      <!-- Stdin Input View -->
+      <div class="term-view" id="term-view-stdin">
+        <div class="stdin-wrapper">
+          <div class="stdin-hint">Provide standard input (stdin) passed to your program before running:</div>
+          <textarea id="term-stdin-input" class="stdin-textarea" placeholder="Enter input values separated by spaces or newlines..."></textarea>
+        </div>
+      </div>
+
+      <!-- Test Results View -->
+      <div class="term-view" id="term-view-tests">
+        <div id="term-tests-output" class="console-output">No test suite executed yet.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= STATUS BAR ================= -->
+  <footer class="status-bar">
+    <div class="status-left">
+      <div class="status-item">
+        <span>⎇ main</span>
+      </div>
+      <div class="status-item">
+        <span id="status-engine-indicator">Engine: JUDGE0 CE</span>
+      </div>
+    </div>
+
+    <div class="status-right">
+      <div class="status-item">
+        <span>Ln 1, Col 1</span>
+      </div>
+      <div class="status-item">
+        <span>Spaces: 4</span>
+      </div>
+      <div class="status-item">
+        <span>UTF-8</span>
+      </div>
+      <div class="status-item">
+        <span id="status-language">PYTHON</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ================= JUDGE0 SETTINGS MODAL ================= -->
+  <div class="modal-overlay" id="settings-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">⚙️ Judge0 Execution Engine Configuration</div>
+        <button class="modal-close-btn" id="btn-settings-close">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Endpoint Provider</label>
+          <select id="setting-endpoint-type" class="form-select">
+            <option value="public">Official Free Public Judge0 CE (https://ce.judge0.com)</option>
+            <option value="rapidapi">RapidAPI Judge0 CE (API Key Required)</option>
+            <option value="custom">Self-Hosted / Custom Judge0 Instance</option>
+          </select>
+          <div class="form-hint">Choose between the official public free endpoint, RapidAPI, or a custom Docker Judge0 instance.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Public Judge0 CE URL</label>
+          <input type="text" id="setting-public-url" class="form-input" value="https://ce.judge0.com">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">RapidAPI Key (if using RapidAPI)</label>
+          <input type="password" id="setting-rapidapi-key" class="form-input" placeholder="Enter your RapidAPI key...">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Custom Self-Hosted Judge0 URL</label>
+          <input type="text" id="setting-custom-url" class="form-input" value="http://localhost:2358" placeholder="http://your-server:2358">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-action" id="btn-settings-cancel" onclick="document.getElementById('settings-modal').classList.remove('visible')">Cancel</button>
+        <button class="btn-primary-action" id="btn-settings-save">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden File Input for Importing Projects -->
+  <input type="file" id="file-import-input" multiple style="display: none;">
+
+  <!-- Toast Notification -->
+  <div id="status-notification" class="status-toast">Notification</div>
+
+  <!-- Main ES Module Application Script -->
+  <script type="module" src="js/app.js"></script>
+
+</body>
+</html>
